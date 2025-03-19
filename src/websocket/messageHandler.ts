@@ -12,7 +12,7 @@ import MetaSearchAgent, {
   MetaSearchAgentType,
 } from '../search/metaSearchAgent';
 import prompts from '../prompts';
-
+import RAGSearchAgent from '../search/ragSearchAgent';
 type Message = {
   messageId: string;
   chatId: string;
@@ -29,13 +29,13 @@ type WSMessage = {
 };
 
 export const searchHandlers = {
-  ragSearch: new MetaSearchAgent({
+  ragSearch: new RAGSearchAgent({
     activeEngines: ['rag'],
     queryGeneratorPrompt: prompts.ragSearchRetrieverPrompt,
     responsePrompt: prompts.ragSearchResponsePrompt,
     rerank: true,
     rerankThreshold: 0.3,
-    searchWeb: false,
+    searchWeb: true,
     summarizer: true,
   }),
   webSearch: new MetaSearchAgent({

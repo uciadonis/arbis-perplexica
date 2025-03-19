@@ -2,8 +2,8 @@ import {
   academicSearchResponsePrompt,
   academicSearchRetrieverPrompt,
 } from './academicSearch';
-import { ragSearchRetrieverPrompt } from './ragSerarch';
-import { ragSearchResponsePrompt } from './ragSerarch';
+import { ragSearchRetrieverPrompt } from './ragSearch';
+import { ragSearchResponsePrompt } from './ragSearch';
 import {
   redditSearchResponsePrompt,
   redditSearchRetrieverPrompt,

@@ -67,3 +67,4 @@ networks:
 volumes:
   backend-dbstore:
   uploads:
+  data:
