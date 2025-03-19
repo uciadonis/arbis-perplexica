@@ -29,6 +29,15 @@ type WSMessage = {
 };
 
 export const searchHandlers = {
+  ragSearch: new MetaSearchAgent({
+    activeEngines: ['rag'],
+    queryGeneratorPrompt: prompts.ragSearchRetrieverPrompt,
+    responsePrompt: prompts.ragSearchResponsePrompt,
+    rerank: true,
+    rerankThreshold: 0.3,
+    searchWeb: false,
+    summarizer: true,
+  }),
   webSearch: new MetaSearchAgent({
     activeEngines: [],
     queryGeneratorPrompt: prompts.webSearchRetrieverPrompt,

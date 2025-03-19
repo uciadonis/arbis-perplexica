@@ -2,6 +2,8 @@ import {
   academicSearchResponsePrompt,
   academicSearchRetrieverPrompt,
 } from './academicSearch';
+import { ragSearchRetrieverPrompt } from './ragSerarch';
+import { ragSearchResponsePrompt } from './ragSerarch';
 import {
   redditSearchResponsePrompt,
   redditSearchRetrieverPrompt,
@@ -29,4 +31,6 @@ export default {
   writingAssistantPrompt,
   youtubeSearchResponsePrompt,
   youtubeSearchRetrieverPrompt,
+  ragSearchResponsePrompt,
+  ragSearchRetrieverPrompt,
 };

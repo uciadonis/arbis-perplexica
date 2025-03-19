@@ -18,6 +18,12 @@ import { Fragment } from 'react';
 
 const focusModes = [
   {
+    key: 'ragSearch',
+    title: 'Abitab RAG',
+    description: "Search in Abitab's RAG database",
+    icon: <SwatchBook size={20} />,
+  },
+  {
     key: 'webSearch',
     title: 'All',
     description: 'Searches across all of the internet',
