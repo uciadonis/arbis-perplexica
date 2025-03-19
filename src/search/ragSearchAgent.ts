@@ -23,7 +23,7 @@ import eventEmitter from 'events';
 import { StreamEvent } from '@langchain/core/tracers/log_stream';
 import { IterableReadableStream } from '@langchain/core/utils/stream';
 import { MetaSearchAgentType } from './metaSearchAgent';
-import { searchRag, RAGQueryResult } from '../lib/ragSearch';
+import { searchRag, RAGQueryResult, RAGRelationship } from '../lib/ragSearch';
 
 interface Config {
   searchWeb: boolean;
@@ -88,11 +88,11 @@ class RAGSearchAgent implements MetaSearchAgentType {
         const relations = res.relations;
         const hyde_document = res.hyde_document;
 
-        const relations_str = relations
-          .map((relation) => {
-            return `[${relation.source}] - ${relation.relation} -> [${relation.target}]`;
-          })
-          .join('\n');
+        // const relations_str = relations
+        //   .map((relation) => {
+        //     return `[${relation.source}] - ${relation.relation} -> [${relation.target}]`;
+        //   })
+        //   .join('\n');
 
         // console.log(JSON.stringify(res, null, 2));
 
@@ -112,7 +112,7 @@ class RAGSearchAgent implements MetaSearchAgentType {
         return {
           query: question,
           docs: documents,
-          relations: relations_str,
+          relations,
           // hyde: hyde_document,
         };
       }),
@@ -135,7 +135,7 @@ class RAGSearchAgent implements MetaSearchAgentType {
             input.chat_history,
           );
           let docs: Document[] | null = null;
-          let relations: string | null = null;
+          let relations: RAGRelationship[] | null = null;
           let query = input.query;
 
           if (this.config.searchWeb) {
@@ -158,23 +158,21 @@ class RAGSearchAgent implements MetaSearchAgentType {
             optimizationMode,
           );
 
-          return sortedDocs;
-        })
-          .withConfig({
-            runName: 'FinalSourceRetriever',
-          })
-          .pipe(this.processDocs),
+          const processedDocs = this.processDocs({ sortedDocs, relations });
+
+          return processedDocs;
+        }).withConfig({
+          runName: 'FinalSourceRetriever',
+        }),
+        // .pipe(this.processDocs),
       }),
-      RunnableLambda.from(async (llmOutput: string) => {
-        console.log('before final response: 000------>', llmOutput);
-        // Retornamos la salida sin modificar para que siga el flujo
-        return llmOutput;
-      }),
+
       ChatPromptTemplate.fromMessages([
         ['system', this.config.responsePrompt],
         new MessagesPlaceholder('chat_history'),
         ['user', '{query}'],
       ]),
+
       RunnableLambda.from(async (llmOutput: string) => {
         console.log('before final response:222------>', llmOutput);
         // Retornamos la salida sin modificar para que siga el flujo
@@ -306,13 +304,52 @@ class RAGSearchAgent implements MetaSearchAgentType {
     }
   }
 
-  private processDocs(docs: Document[]) {
-    return docs
+  private processDocs(
+    input:
+      | Document[]
+      | { sortedDocs: Document[]; relations: RAGRelationship[] },
+  ) {
+    // Determinar si estamos recibiendo documentos directamente o un objeto estructurado
+    let sortedDocs: Document[];
+    let relations: RAGRelationship[] = [];
+
+    if (Array.isArray(input)) {
+      // Caso antiguo: solo recibimos documentos
+      sortedDocs = input;
+    } else {
+      // Caso nuevo: recibimos objeto con documentos y relaciones
+      sortedDocs = input.sortedDocs;
+      relations = input.relations || [];
+    }
+
+    // Procesar documentos
+    const docs_str = sortedDocs
       .map(
         (_, index) =>
-          `${index + 1}. ${docs[index].metadata.title} ${docs[index].pageContent}`,
+          `${index + 1}. ${sortedDocs[index].metadata.title} ${sortedDocs[index].pageContent}`,
       )
       .join('\n');
+
+    // Procesar relaciones si existen
+    if (relations.length === 0) {
+      return docs_str;
+    }
+
+    // Continuar con el índice después del último documento
+    const startRelationIndex = sortedDocs.length + 1;
+    // const relations_str = relations
+    //   .map((relation, index) => {
+    //     return `${startRelationIndex + index}. Relación: ${relation.source} ${relation.relation} ${relation.target}`;
+    //   })
+    //   .join('\n');
+    let relations_str = 'Knowledge graph:\n';
+    for (let i = 0; i < relations.length && i < 20; i++) {
+      const relation = relations[i];
+      relations_str += `${i + 1}. ${relation.source} ${relation.relation} ${relation.target}\n`;
+    }
+
+    // Combinar ambos
+    return `${docs_str}\n\n${relations_str}`;
   }
 
   private async handleStream(
