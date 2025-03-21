@@ -1,10 +1,15 @@
-import { defineConfig } from 'drizzle-kit';
+import type { Config } from 'drizzle-kit';
 
-export default defineConfig({
-  dialect: 'sqlite',
+export default {
   schema: './src/db/schema.ts',
   out: './drizzle',
+  dialect: 'postgresql',
   dbCredentials: {
-    url: './data/db.sqlite',
+    host: '192.168.68.106',
+    port: 31000,
+    user: 'plaixa',
+    password: 'plaixa25@!',
+    database: 'arbisus',
+    ssl: false,
   },
-});
+} satisfies Config;

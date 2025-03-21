@@ -128,18 +128,18 @@ const handleEmitterEvents = (
   emitter.on('end', () => {
     ws.send(JSON.stringify({ type: 'messageEnd', messageId: messageId }));
 
-    db.insert(messagesSchema)
-      .values({
-        content: recievedMessage,
-        chatId: chatId,
-        messageId: messageId,
-        role: 'assistant',
-        metadata: JSON.stringify({
-          createdAt: new Date(),
-          ...(sources && sources.length > 0 && { sources }),
-        }),
-      })
-      .execute();
+    // db.insert(messagesSchema)
+    //   .values({
+    //     content: recievedMessage,
+    //     chatId: chatId,
+    //     messageId: messageId,
+    //     type: 'assistant',
+    //     metadata: JSON.stringify({
+    //       createdAt: new Date(),
+    //       ...(sources && sources.length > 0 && { sources }),
+    //     }),
+    //   })
+    //   .execute();
   });
   emitter.on('error', (data) => {
     const parsedData = JSON.parse(data);
@@ -215,16 +215,15 @@ export const handleMessage = async (
           });
 
           if (!chat) {
-            await db
-              .insert(chats)
-              .values({
-                id: parsedMessage.chatId,
-                title: parsedMessage.content,
-                createdAt: new Date().toString(),
-                focusMode: parsedWSMessage.focusMode,
-                files: parsedWSMessage.files.map(getFileDetails),
-              })
-              .execute();
+            const files = parsedWSMessage.files.map(getFileDetails);
+            const newChat = {
+              id: parsedMessage.chatId,
+              title: parsedMessage.content,
+              createdAt: new Date().toString(),
+              focusMode: parsedWSMessage.focusMode,
+              files: JSON.stringify(parsedWSMessage.files.map(getFileDetails)),
+            };
+            await db.insert(chats).values(newChat).execute();
           }
 
           const messageExists = await db.query.messages.findFirst({
@@ -232,18 +231,16 @@ export const handleMessage = async (
           });
 
           if (!messageExists) {
-            await db
-              .insert(messagesSchema)
-              .values({
-                content: parsedMessage.content,
-                chatId: parsedMessage.chatId,
-                messageId: humanMessageId,
-                role: 'user',
-                metadata: JSON.stringify({
-                  createdAt: new Date(),
-                }),
-              })
-              .execute();
+            const newMessage = {
+              content: parsedMessage.content,
+              chatId: parsedMessage.chatId,
+              messageId: humanMessageId,
+              type: 'user',
+              metadata: JSON.stringify({
+                createdAt: new Date(),
+              }),
+            };
+            //await db.insert(messagesSchema).values(newMessage).execute();
           } else {
             await db
               .delete(messagesSchema)
