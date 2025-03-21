@@ -641,7 +641,7 @@ const ChatWindow = ({ id }: { id?: string }) => {
     notFound ? (
       <NextError statusCode={404} />
     ) : (
-      <div>
+      <div className="flex flex-col h-full max-w-screen-lg mx-auto">
         {messages.length > 0 ? (
           <>
             <Navbar chatId={chatId!} messages={messages} />

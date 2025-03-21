@@ -323,12 +323,26 @@ class RAGSearchAgent implements MetaSearchAgentType {
     }
 
     // Procesar documentos
-    const docs_str = sortedDocs
-      .map(
-        (_, index) =>
-          `${index + 1}. ${sortedDocs[index].metadata.title} ${sortedDocs[index].pageContent}`,
-      )
-      .join('\n');
+    // const docs_str = sortedDocs
+    //   .map(
+    //     (_, index) =>
+    //       `${index + 1}. ${sortedDocs[index].metadata.title} ${sortedDocs[index].pageContent}`,
+    //   )
+    //   .join('\n');
+
+    const docs_str = sortedDocs.map((_, index) => {
+      const doc = sortedDocs[index];
+      const title = doc.metadata.title;
+      const url = doc.metadata.url || 'URL no disponible';
+      // return `${index + 1}. ${title}\n${doc.pageContent}\nFuente: ${url}\n---`;
+      return `DOCUMENTO ${index + 1}
+        Título: ${title}
+        Contenido:
+        ${doc.pageContent}
+        Fuente: ${url}
+        ---
+        `;
+    });
 
     // Procesar relaciones si existen
     if (relations.length === 0) {
@@ -336,16 +350,17 @@ class RAGSearchAgent implements MetaSearchAgentType {
     }
 
     // Continuar con el índice después del último documento
-    const startRelationIndex = sortedDocs.length + 1;
-    // const relations_str = relations
-    //   .map((relation, index) => {
-    //     return `${startRelationIndex + index}. Relación: ${relation.source} ${relation.relation} ${relation.target}`;
-    //   })
-    //   .join('\n');
+    // const startRelationIndex = sortedDocs.length + 1;
     let relations_str = 'Knowledge graph:\n';
-    for (let i = 0; i < relations.length && i < 20; i++) {
+    for (let i = 0; i < relations.length && i < 25; i++) {
       const relation = relations[i];
-      relations_str += `${i + 1}. ${relation.source} ${relation.relation} ${relation.target}\n`;
+      // relations_str += relations
+      //   .map(
+      //     (r, i) => `${i + 1}. (${r.source}) -[${r.relation}]-> (${r.target})`,
+      //   )
+      //   .join('\n');
+      // relations_str += `${i + 1}. ${relation.source} ${relation.relation} ${relation.target}\n`;
+      relations_str += `${i + 1}. (${relation.source}) -[${relation.relation}]-> (${relation.target})\n`;
     }
 
     // Combinar ambos
