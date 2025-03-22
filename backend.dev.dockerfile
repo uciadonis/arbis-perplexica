@@ -1,4 +1,4 @@
-FROM node:18-slim
+FROM node:20.18.0-slim
 
 WORKDIR /home/perplexica
 

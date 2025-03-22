@@ -7,15 +7,16 @@ services:
       - 4000:8080
     networks:
       - perplexica-network
+    restart: unless-stopped
 
-  perplexica-backend:
+  app:
     build:
       context: .
-      dockerfile: backend.dev.dockerfile
+      dockerfile: app.dev.dockerfile
     depends_on:
       - searxng
     ports:
-      - 3001:3001
+      - 3000:3000
     volumes:
       - ./src:/home/perplexica/src
       - ./package.json:/home/perplexica/package.json
@@ -37,29 +38,29 @@ services:
           target: /home/perplexica/src
           action: sync
 
-  perplexica-frontend:
-    build:
-      context: .
-      dockerfile: app.dev.dockerfile
-    depends_on:
-      - perplexica-backend
-    ports:
-      - 3000:3000
-    volumes:
-      - ./ui:/home/perplexica
-      - /home/perplexica/node_modules
-    networks:
-      - perplexica-network
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:3001/api
-      - NEXT_PUBLIC_WS_URL=ws://localhost:3001
-    develop:
-      watch:
-        - path: ./ui/package.json
-          action: rebuild
-        - path: ./ui
-          target: /home/perplexica
-          action: sync
+  # perplexica-frontend:
+  #   build:
+  #     context: .
+  #     dockerfile: app.dev.dockerfile
+  #   depends_on:
+  #     - perplexica-backend
+  #   ports:
+  #     - 3000:3000
+  #   volumes:
+  #     - ./ui:/home/perplexica
+  #     - /home/perplexica/node_modules
+  #   networks:
+  #     - perplexica-network
+  #   environment:
+  #     - NEXT_PUBLIC_API_URL=http://localhost:3001/api
+  #     - NEXT_PUBLIC_WS_URL=ws://localhost:3001
+  #   develop:
+  #     watch:
+  #       - path: ./ui/package.json
+  #         action: rebuild
+  #       - path: ./ui
+  #         target: /home/perplexica
+  #         action: sync
 
 networks:
   perplexica-network:
