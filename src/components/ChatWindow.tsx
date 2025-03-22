@@ -347,6 +347,8 @@ const ChatWindow = ({ id }: { id?: string }) => {
 
     messageId = messageId ?? crypto.randomBytes(7).toString('hex');
 
+    const isFirstMessage = messages.length === 0;
+
     setMessages((prevMessages) => [
       ...prevMessages,
       {
@@ -357,6 +359,10 @@ const ChatWindow = ({ id }: { id?: string }) => {
         createdAt: new Date(),
       },
     ]);
+
+    if (isFirstMessage && window) {
+      window.history.pushState({}, '', `/c/${chatId}`);
+    }
 
     const messageHandler = async (data: any) => {
       if (data.type === 'error') {
