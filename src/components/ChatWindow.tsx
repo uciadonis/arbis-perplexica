@@ -327,7 +327,11 @@ const ChatWindow = ({ id }: { id?: string }) => {
     }
   }, [isMessagesLoaded, isConfigReady]);
 
-  const sendMessage = async (message: string, messageId?: string) => {
+  const sendMessage = async (
+    message: string,
+    messageId?: string,
+    newfocusMode?: string,
+  ) => {
     if (loading) return;
     if (!isConfigReady) {
       toast.error('Cannot send message before the configuration is ready');
@@ -469,7 +473,7 @@ const ChatWindow = ({ id }: { id?: string }) => {
         },
         chatId: chatId!,
         files: fileIds,
-        focusMode: focusMode,
+        focusMode: newfocusMode ?? focusMode,
         optimizationMode: optimizationMode,
         history: chatHistory,
         chatModel: {
@@ -529,7 +533,11 @@ const ChatWindow = ({ id }: { id?: string }) => {
 
   useEffect(() => {
     if (isReady && initialMessage && isConfigReady) {
-      sendMessage(initialMessage);
+      if (initialMessage.includes('Summary:')) {
+        sendMessage(initialMessage, undefined, 'webSearch');
+      } else {
+        sendMessage(initialMessage);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isConfigReady, isReady, initialMessage]);

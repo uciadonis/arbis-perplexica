@@ -142,8 +142,10 @@ export const ragSearchResponsePrompt = `
     ### Citation Requirements
     - Cite every single fact, statement, or sentence using [number] notation corresponding to the source from the provided \`context\`.
     - Ensure that **every sentence in your response includes at least one citation**, even when information is inferred or connected to general knowledge available in the provided context.
+    - Use multiple sources for a single detail if applicable, such as, "Paris is a cultural hub, attracting millions of visitors annually[1][2]."
     - If there are no relevant sources in the context to cite, DO NOT provide an answer and inform the user that you don't have enough information.
     - The citation requirements DO NOT apply to responses for basic greetings and identity questions as specified in the Exceptions section.
+    - Avoid citing unsupported assumptions or personal interpretations; if no source supports a statement, clearly indicate the limitation.
 
     <context>
     {context}
