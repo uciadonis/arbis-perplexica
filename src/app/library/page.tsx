@@ -76,30 +76,30 @@ const Page = () => {
         </div>
       )}
       {chats.length > 0 && (
-        <div className="flex flex-col pb-20 lg:pb-2 max-w-screen-md mx-auto">
+        <div className="flex flex-col pb-20 lg:pb-2 max-w-screen-md mx-auto gap-y-2">
           {chats.map((chat, i) => (
             <div
-              className={cn(
-                'flex flex-col space-y-4 py-6',
-                i !== chats.length - 1
-                  ? 'border-b border-light-secondary dark:border-dark-secondary'
-                  : '',
-              )}
-              key={i}
+              key={chat.id}
+              className="rounded-lg border border-light-secondary dark:border-dark-secondary hover:bg-light-secondary dark:hover:bg-dark-secondary"
             >
-              <Link
-                href={`/c/${chat.id}`}
-                className="text-black dark:text-white lg:text-xl font-medium truncate transition duration-200 hover:text-[#24A0ED] dark:hover:text-[#24A0ED] cursor-pointer"
-              >
-                {chat.title}
-              </Link>
-              <div className="flex flex-row items-center justify-between w-full">
-                <div className="flex flex-row items-center space-x-1 lg:space-x-1.5 text-black/70 dark:text-white/70">
-                  <ClockIcon size={15} />
-                  <p className="text-xs">
-                    {formatTimeDifference(new Date(), chat.createdAt)} Ago
-                  </p>
-                </div>
+              <div className="flex flex-row items-center justify-between w-full gap-x-4 p-4">
+                <Link
+                  href={`/c/${chat.id}`}
+                  className="flex-1 transition cursor-pointer"
+                >
+                  <div className="text-black/70 dark:text-white/70 space-y-2">
+                    <div className="font-medium text-ellipsis overflow-hidden line-clamp-1">
+                      {chat.title}
+                    </div>
+                    <div className="flex flex-row items-center space-x-1 text-md lg:space-x-1.5 text-black/65 dark:text-white/70">
+                      <ClockIcon size={15} />
+                      <p className="text-xs">
+                        {formatTimeDifference(new Date(), chat.createdAt)} Ago
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+
                 <DeleteChat
                   chatId={chat.id}
                   chats={chats}
