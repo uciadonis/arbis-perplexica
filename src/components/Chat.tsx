@@ -5,7 +5,7 @@ import MessageInput from './MessageInput';
 import { File, Message } from './ChatWindow';
 import MessageBox from './MessageBox';
 import MessageBoxLoading from './MessageBoxLoading';
-
+import { cn } from '@/lib/utils';
 const Chat = ({
   loading,
   messages,
@@ -53,7 +53,7 @@ const Chat = ({
     };
 
     if (messages.length === 1) {
-      document.title = `${messages[0].content.substring(0, 30)} - Perplexica`;
+      document.title = `${messages[0].content.substring(0, 30)} - Arbis`;
     }
 
     if (messages[messages.length - 1]?.role == 'user') {
@@ -89,7 +89,8 @@ const Chat = ({
       <div ref={messageEnd} className="h-0" />
       {dividerWidth > 0 && (
         <div
-          className="bottom-24 lg:bottom-10 fixed z-40"
+          // className={cn('bottom-24 lg:bottom-10 fixed z-40')}
+          className={cn('bottom-0 pb-24 lg:pb-16 fixed z-40')}
           style={{ width: dividerWidth }}
         >
           <MessageInput
