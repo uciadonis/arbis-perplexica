@@ -98,7 +98,6 @@ const Page = () => {
                   key={i}
                   className={cn(
                     'rounded-lg overflow-hidden hover:-translate-y-[1px] transition duration-200',
-                    // 'bg-light-secondary dark:bg-dark-secondary',
                     'border border-light-secondary dark:border-dark-secondary',
                     isWide && 'lg:col-span-3 md:col-span-2',
                   )}
@@ -125,8 +124,6 @@ const Page = () => {
                       alt={item.title}
                     />
                   </div>
-                  {/* <div className="px-6 py-4"> */}
-                  {/* <div className="p-md flex h-full w-full grow transform-gpu flex-col"> */}
                   <div className="p-4 flex w-full grow transform-gpu flex-col">
                     <div
                       className={cn(

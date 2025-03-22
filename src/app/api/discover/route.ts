@@ -4,12 +4,12 @@ const articleWebsites = [
   'yahoo.com',
   'www.exchangewire.com',
   'businessinsider.com',
-  /* 'wired.com',
+  'wired.com',
   'mashable.com',
   'theverge.com',
   'gizmodo.com',
   'cnet.com',
-  'venturebeat.com', */
+  'venturebeat.com',
 ];
 
 const topics = ['AI', 'tech']; /* TODO: Add UI to customize this */
