@@ -49,6 +49,14 @@ const EmptyChat = ({
           files={files}
           setFiles={setFiles}
         />
+        <div className="absolute bottom-0 left-0 right-0 p-4">
+          <div className="flex flex-col items-center justify-center">
+            <p className="dark:text-white/70 text-black/65 text-xs">
+              Arbis puede cometer errores. Considera verificar la información
+              importante.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

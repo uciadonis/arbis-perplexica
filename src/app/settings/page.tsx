@@ -348,7 +348,7 @@ const Page = () => {
           </Link>
           <div className="flex flex-row space-x-0.5 items-center">
             <SettingsIcon size={23} />
-            <h1 className="text-3xl font-medium p-2">Settings</h1>
+            <h1 className="text-3xl font-medium p-2">Configuración</h1>
           </div>
         </div>
         <hr className="border-t border-[#2B2C2C] my-4 w-full" />
@@ -376,16 +376,14 @@ const Page = () => {
       ) : (
         config && (
           <div className="flex flex-col space-y-6 pb-28 lg:pb-8">
-            <SettingsSection title="Appearance">
+            <SettingsSection title="Apariencia">
               <div className="flex flex-col space-y-1">
-                <p className="text-black/70 dark:text-white/70 text-sm">
-                  Theme
-                </p>
+                <p className="text-black/70 dark:text-white/70 text-sm">Tema</p>
                 <ThemeSwitcher />
               </div>
             </SettingsSection>
 
-            <SettingsSection title="Automatic Search">
+            <SettingsSection title="Búsqueda Automática">
               <div className="flex flex-col space-y-4">
                 <div className="flex items-center justify-between p-3 bg-light-secondary dark:bg-dark-secondary rounded-lg hover:bg-light-200 dark:hover:bg-dark-200 transition-colors">
                   <div className="flex items-center space-x-3">
@@ -397,11 +395,11 @@ const Page = () => {
                     </div>
                     <div>
                       <p className="text-sm text-black/90 dark:text-white/90 font-medium">
-                        Automatic Image Search
+                        Búsqueda Automática de Imágenes
                       </p>
                       <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
-                        Automatically search for relevant images in chat
-                        responses
+                        Busca automáticamente imágenes relevantes en las
+                        respuestas
                       </p>
                     </div>
                   </div>
@@ -439,11 +437,11 @@ const Page = () => {
                     </div>
                     <div>
                       <p className="text-sm text-black/90 dark:text-white/90 font-medium">
-                        Automatic Video Search
+                        Búsqueda Automática de Videos
                       </p>
                       <p className="text-xs text-black/60 dark:text-white/60 mt-0.5">
-                        Automatically search for relevant videos in chat
-                        responses
+                        Busca automáticamente videos relevantes en las
+                        respuestas
                       </p>
                     </div>
                   </div>
@@ -473,12 +471,12 @@ const Page = () => {
               </div>
             </SettingsSection>
 
-            <SettingsSection title="Model Settings">
+            <SettingsSection title="Configuración del modelo">
               {config.chatModelProviders && (
                 <div className="flex flex-col space-y-4">
                   <div className="flex flex-col space-y-1">
                     <p className="text-black/70 dark:text-white/70 text-sm">
-                      Chat Model Provider
+                      Proveedor del Modelo del Chat
                     </p>
                     <Select
                       value={selectedChatModelProvider ?? undefined}
@@ -508,7 +506,7 @@ const Page = () => {
                     selectedChatModelProvider != 'custom_openai' && (
                       <div className="flex flex-col space-y-1">
                         <p className="text-black/70 dark:text-white/70 text-sm">
-                          Chat Model
+                          Modelo del Chat
                         </p>
                         <Select
                           value={selectedChatModel ?? undefined}
@@ -555,11 +553,11 @@ const Page = () => {
                   <div className="flex flex-col space-y-4">
                     <div className="flex flex-col space-y-1">
                       <p className="text-black/70 dark:text-white/70 text-sm">
-                        Model Name
+                        Nombre del Modelo
                       </p>
                       <Input
                         type="text"
-                        placeholder="Model name"
+                        placeholder="Nombre del modelo"
                         value={config.customOpenaiModelName}
                         isSaving={savingStates['customOpenaiModelName']}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -575,11 +573,11 @@ const Page = () => {
                     </div>
                     <div className="flex flex-col space-y-1">
                       <p className="text-black/70 dark:text-white/70 text-sm">
-                        Custom OpenAI API Key
+                        Clave de API de OpenAI Personalizada
                       </p>
                       <Input
                         type="text"
-                        placeholder="Custom OpenAI API Key"
+                        placeholder="Clave de API de OpenAI Personalizada"
                         value={config.customOpenaiApiKey}
                         isSaving={savingStates['customOpenaiApiKey']}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -595,11 +593,11 @@ const Page = () => {
                     </div>
                     <div className="flex flex-col space-y-1">
                       <p className="text-black/70 dark:text-white/70 text-sm">
-                        Custom OpenAI Base URL
+                        URL Base de OpenAI Personalizada
                       </p>
                       <Input
                         type="text"
-                        placeholder="Custom OpenAI Base URL"
+                        placeholder="URL Base de OpenAI Personalizada"
                         value={config.customOpenaiApiUrl}
                         isSaving={savingStates['customOpenaiApiUrl']}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -620,7 +618,7 @@ const Page = () => {
                 <div className="flex flex-col space-y-4 mt-4 pt-4 border-t border-light-200 dark:border-dark-200">
                   <div className="flex flex-col space-y-1">
                     <p className="text-black/70 dark:text-white/70 text-sm">
-                      Embedding Model Provider
+                      Proveedor del Modelo de Embedding
                     </p>
                     <Select
                       value={selectedEmbeddingModelProvider ?? undefined}
@@ -649,7 +647,7 @@ const Page = () => {
                   {selectedEmbeddingModelProvider && (
                     <div className="flex flex-col space-y-1">
                       <p className="text-black/70 dark:text-white/70 text-sm">
-                        Embedding Model
+                        Modelo de Embedding
                       </p>
                       <Select
                         value={selectedEmbeddingModel ?? undefined}
