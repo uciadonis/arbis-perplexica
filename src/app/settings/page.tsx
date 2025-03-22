@@ -340,18 +340,19 @@ const Page = () => {
   };
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <div className="flex flex-col pt-4">
-        <div className="flex items-center space-x-2">
+    <div className="">
+      <div className="flex flex-col pt-5">
+        <div className="ease px-md md:px-lg relative flex w-full items-center justify-between duration-150 max-w-3xl mx-auto px-2">
           <Link href="/" className="lg:hidden">
             <ArrowLeft className="text-black/70 dark:text-white/70" />
           </Link>
           <div className="flex flex-row space-x-0.5 items-center">
             <SettingsIcon size={23} />
-            <h1 className="text-3xl font-medium p-2">Configuración</h1>
+            <h1 className="text-2xl font-medium">Configuración</h1>
           </div>
         </div>
-        <hr className="border-t border-[#2B2C2C] my-4 w-full" />
+        {/* <hr className="border-t border-light-secondary dark:border-dark-secondary my-4 w-full" /> */}
+        <hr className="border-t bg-light-secondary my-4 w-full" />
       </div>
 
       {isLoading ? (
@@ -375,7 +376,7 @@ const Page = () => {
         </div>
       ) : (
         config && (
-          <div className="flex flex-col space-y-6 pb-28 lg:pb-8">
+          <div className="flex flex-col space-y-6 pb-28 lg:pb-8 max-w-3xl mx-auto">
             <SettingsSection title="Apariencia">
               <div className="flex flex-col space-y-1">
                 <p className="text-black/70 dark:text-white/70 text-sm">Tema</p>

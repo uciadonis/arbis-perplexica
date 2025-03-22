@@ -62,7 +62,7 @@ const Page = () => {
         <div className="ease px-md md:px-lg relative flex w-full items-center justify-between duration-150 max-w-screen-md mx-auto px-2">
           <div className="flex items-center gap-2 w-full">
             <BookOpenText />
-            <h1 className="text-2xl font-medium">Library</h1>
+            <h1 className="text-2xl font-medium">Historial</h1>
           </div>
         </div>
 
@@ -82,7 +82,7 @@ const Page = () => {
               className={cn(
                 'flex flex-col space-y-4 py-6',
                 i !== chats.length - 1
-                  ? 'border-b border-white-200 dark:border-dark-200'
+                  ? 'border-b border-light-secondary dark:border-dark-secondary'
                   : '',
               )}
               key={i}

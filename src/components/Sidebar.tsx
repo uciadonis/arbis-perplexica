@@ -33,7 +33,7 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
       icon: BookOpenText,
       href: '/library',
       active: segments.includes('library'),
-      label: 'Library',
+      label: 'Historial',
     },
   ];
 
