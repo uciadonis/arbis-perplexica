@@ -569,35 +569,37 @@ const ChatWindow = ({ id }: { id?: string }) => {
     notFound ? (
       <NextError statusCode={404} />
     ) : (
-      <div className="flex flex-col h-full max-w-screen-lg mx-auto">
-        {messages.length > 0 ? (
-          <>
-            <Navbar chatId={chatId!} messages={messages} />
-            <Chat
-              loading={loading}
-              messages={messages}
+      <div className="flex flex-col h-full w-full">
+        <div className="relative h-full w-full">
+          {messages.length > 0 ? (
+            <>
+              <Navbar chatId={chatId!} messages={messages} />
+              <Chat
+                loading={loading}
+                messages={messages}
+                sendMessage={sendMessage}
+                messageAppeared={messageAppeared}
+                rewrite={rewrite}
+                fileIds={fileIds}
+                setFileIds={setFileIds}
+                files={files}
+                setFiles={setFiles}
+              />
+            </>
+          ) : (
+            <EmptyChat
               sendMessage={sendMessage}
-              messageAppeared={messageAppeared}
-              rewrite={rewrite}
+              focusMode={focusMode}
+              setFocusMode={setFocusMode}
+              optimizationMode={optimizationMode}
+              setOptimizationMode={setOptimizationMode}
               fileIds={fileIds}
               setFileIds={setFileIds}
               files={files}
               setFiles={setFiles}
             />
-          </>
-        ) : (
-          <EmptyChat
-            sendMessage={sendMessage}
-            focusMode={focusMode}
-            setFocusMode={setFocusMode}
-            optimizationMode={optimizationMode}
-            setOptimizationMode={setOptimizationMode}
-            fileIds={fileIds}
-            setFileIds={setFileIds}
-            files={files}
-            setFiles={setFiles}
-          />
-        )}
+          )}
+        </div>
       </div>
     )
   ) : (

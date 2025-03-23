@@ -20,6 +20,8 @@ import SearchImages from './SearchImages';
 import SearchVideos from './SearchVideos';
 import { useSpeech } from 'react-text-to-speech';
 import ThinkBox from './ThinkBox';
+import ThumbsUp from './MessageActions/ThumbsUp';
+import ThumbsDown from './MessageActions/ThumbsDown';
 
 const ThinkTagProcessor = ({ children }: { children: React.ReactNode }) => {
   return <ThinkBox content={children as string} />;
@@ -99,9 +101,10 @@ const MessageBox = ({
             'w-full',
             messageIndex === 0 ? 'pt-16' : 'pt-8',
             'break-words',
+            'pb-8',
           )}
         >
-          <h2 className="text-black dark:text-white font-medium text-3xl lg:w-9/12">
+          <h2 className="text-black dark:text-white font-medium text-2xl lg:w-9/12">
             {message.content}
           </h2>
         </div>
@@ -117,8 +120,8 @@ const MessageBox = ({
               <div className="flex flex-col space-y-2">
                 <div className="flex flex-row items-center space-x-2">
                   <BookCopy className="text-black dark:text-white" size={20} />
-                  <h3 className="text-black dark:text-white font-medium text-xl">
-                    Sources
+                  <h3 className="text-black dark:text-white font-medium text-lg">
+                    Fuentes
                   </h3>
                 </div>
                 <MessageSources sources={message.sources} />
@@ -133,7 +136,7 @@ const MessageBox = ({
                   )}
                   size={20}
                 />
-                <h3 className="text-black dark:text-white font-medium text-xl">
+                <h3 className="text-black dark:text-white font-medium text-lg">
                   Answer
                 </h3>
               </div>
@@ -156,6 +159,8 @@ const MessageBox = ({
                     <Rewrite rewrite={rewrite} messageId={message.messageId} />
                   </div>
                   <div className="flex flex-row items-center space-x-1">
+                    <ThumbsUp messageId={message.messageId} />
+                    <ThumbsDown messageId={message.messageId} />
                     <Copy initialMessage={message.content} message={message} />
                     <button
                       onClick={() => {
