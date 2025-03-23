@@ -63,7 +63,7 @@ const Chat = ({
 
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden mx-auto">
-      <div className="flex-1 overflow-y-auto ">
+      <div className="flex-1 overflow-y-auto relative">
         <div className="max-w-screen-lg mx-auto">
           {messages.map((msg, i) => {
             const isLast = i === messages.length - 1;
@@ -88,6 +88,7 @@ const Chat = ({
             );
           })}
         </div>
+        {/* <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none bg-gradient-to-t from-white dark:from-gray-900 to-transparent"></div> */}
       </div>
       <div className="flex flex-col pb-24 lg:pb-2">
         <div className="max-w-screen-lg w-full mx-auto">
