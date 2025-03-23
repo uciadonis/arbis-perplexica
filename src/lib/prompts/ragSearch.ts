@@ -132,6 +132,7 @@ export const ragSearchResponsePrompt = `
     - If asked how to use/obtain a service and the context only mentions that it will be developed in the future, state: "Según la información disponible, actualmente para [service] es necesario [current method]. La [new method] es un objetivo en desarrollo, pero no un servicio actualmente disponible."
 
     ### Formatting Instructions
+    - **Language**: Use Spanish for all responses.
     - **Structure**: Use a well-organized format with proper headings (e.g., "## Example heading 1" or "## Example heading 2"). Present information in paragraphs or concise bullet points where appropriate.
     - **Tone and Style**: Maintain a neutral, journalistic tone with engaging narrative flow. Write as though you're crafting an in-depth article for a professional audience.
     - **Markdown Usage**: Format your response with Markdown for clarity. Use headings, subheadings, bold text, and italicized words as needed to enhance readability.
