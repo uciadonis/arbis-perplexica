@@ -20,15 +20,13 @@ export async function POST(req: Request) {
       where: (f) => and(eq(f.messageId, messageId), eq(f.userId, userId)),
     });
 
+    // Si existe un feedback previo
     if (existingFeedback) {
-      // Si el feedback es el mismo, actualizamos solo el comentario y la fecha
+      // Si es el mismo tipo de feedback, actualizamos el comentario o lo eliminamos
       if (existingFeedback.feedback === feedback) {
+        // Si estamos enviando el mismo feedback, consideramos que lo estamos quitando
         await db
-          .update(feedbacks)
-          .set({
-            comment,
-            createdAt: new Date().toISOString(),
-          })
+          .delete(feedbacks)
           .where(
             and(
               eq(feedbacks.messageId, messageId),
@@ -36,8 +34,10 @@ export async function POST(req: Request) {
             ),
           )
           .execute();
+
+        return NextResponse.json({ success: true, action: 'removed' });
       } else {
-        // Si el feedback es diferente, lo eliminamos y creamos uno nuevo
+        // Si es un feedback diferente, reemplazamos el anterior
         await db
           .delete(feedbacks)
           .where(
@@ -58,6 +58,8 @@ export async function POST(req: Request) {
             createdAt: new Date().toISOString(),
           })
           .execute();
+
+        return NextResponse.json({ success: true, action: 'changed' });
       }
     } else {
       // Crear un nuevo feedback
@@ -71,9 +73,9 @@ export async function POST(req: Request) {
           createdAt: new Date().toISOString(),
         })
         .execute();
-    }
 
-    return NextResponse.json({ success: true });
+      return NextResponse.json({ success: true, action: 'added' });
+    }
   } catch (error) {
     console.error('Error saving feedback:', error);
     return NextResponse.json(

@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { ThumbsDown as ThumbsDownIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { useFeedback } from '../../context/FeedbackContext';
 
 const ThumbsDown = ({ messageId }: { messageId: string }) => {
-  const [isActive, setIsActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [feedbackComment, setFeedbackComment] = useState('');
   const [existingComment, setExistingComment] = useState('');
+
+  const { activeFeedback, setMessageFeedback } = useFeedback();
+  const isActive = activeFeedback[messageId] === 'negative';
 
   // Cargar estado de feedback al montar el componente
   useEffect(() => {
@@ -16,11 +19,17 @@ const ThumbsDown = ({ messageId }: { messageId: string }) => {
         const response = await fetch(`/api/feedback?messageId=${messageId}`);
         if (response.ok) {
           const data = await response.json();
-          if (data.feedback && data.feedback.feedback === 'negative') {
-            setIsActive(true);
-            if (data.feedback.comment) {
+          if (data.feedback) {
+            setMessageFeedback(messageId, data.feedback.feedback);
+            if (
+              data.feedback.feedback === 'negative' &&
+              data.feedback.comment
+            ) {
               setExistingComment(data.feedback.comment);
             }
+          } else {
+            // Asegurarse de que se establece como null si no hay feedback
+            setMessageFeedback(messageId, null);
           }
         }
       } catch (error) {
@@ -28,8 +37,11 @@ const ThumbsDown = ({ messageId }: { messageId: string }) => {
       }
     };
 
-    fetchFeedback();
-  }, [messageId]);
+    // Solo cargar si aún no tenemos un valor en el contexto
+    if (activeFeedback[messageId] === undefined) {
+      fetchFeedback();
+    }
+  }, [messageId, setMessageFeedback, activeFeedback]);
 
   const handleThumbsDown = async () => {
     if (isLoading) return;
@@ -45,7 +57,7 @@ const ThumbsDown = ({ messageId }: { messageId: string }) => {
           },
           body: JSON.stringify({
             messageId,
-            feedback: 'positive', // Esto eliminará el negativo existente
+            feedback: 'negative', // Mismo feedback para eliminarlo
           }),
         });
 
@@ -53,9 +65,13 @@ const ThumbsDown = ({ messageId }: { messageId: string }) => {
           throw new Error('Failed to remove feedback');
         }
 
-        setIsActive(false);
-        setExistingComment('');
-        toast.info('Has eliminado tu valoración');
+        const data = await response.json();
+
+        if (data.action === 'removed') {
+          setMessageFeedback(messageId, null);
+          setExistingComment('');
+          toast.info('Has eliminado tu valoración');
+        }
       } catch (error) {
         console.error('Error removing thumbs down:', error);
         toast.error('No se pudo eliminar la valoración');
@@ -90,10 +106,14 @@ const ThumbsDown = ({ messageId }: { messageId: string }) => {
         throw new Error('Failed to save feedback');
       }
 
-      setIsActive(true);
-      setShowFeedbackForm(false);
-      setExistingComment(feedbackComment);
-      toast.success('¡Gracias por tu valoración!');
+      const data = await response.json();
+
+      if (data.action === 'added' || data.action === 'changed') {
+        setMessageFeedback(messageId, 'negative');
+        setShowFeedbackForm(false);
+        setExistingComment(feedbackComment);
+        toast.success('¡Gracias por tu valoración!');
+      }
     } catch (error) {
       console.error('Error saving thumbs down:', error);
       toast.error('No se pudo guardar la valoración');

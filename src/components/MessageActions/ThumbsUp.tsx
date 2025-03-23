@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
 import { ThumbsUp as ThumbsUpIcon } from 'lucide-react';
 import { toast } from 'sonner';
+import { useFeedback } from '../../context/FeedbackContext';
 
 const ThumbsUp = ({ messageId }: { messageId: string }) => {
-  const [isActive, setIsActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { activeFeedback, setMessageFeedback } = useFeedback();
+
+  const isActive = activeFeedback[messageId] === 'positive';
 
   // Cargar estado de feedback al montar el componente
   useEffect(() => {
@@ -13,8 +16,11 @@ const ThumbsUp = ({ messageId }: { messageId: string }) => {
         const response = await fetch(`/api/feedback?messageId=${messageId}`);
         if (response.ok) {
           const data = await response.json();
-          if (data.feedback && data.feedback.feedback === 'positive') {
-            setIsActive(true);
+          if (data.feedback) {
+            setMessageFeedback(messageId, data.feedback.feedback);
+          } else {
+            // Asegurarse de que se establece como null si no hay feedback
+            setMessageFeedback(messageId, null);
           }
         }
       } catch (error) {
@@ -22,8 +28,11 @@ const ThumbsUp = ({ messageId }: { messageId: string }) => {
       }
     };
 
-    fetchFeedback();
-  }, [messageId]);
+    // Solo cargar si aún no tenemos un valor en el contexto
+    if (activeFeedback[messageId] === undefined) {
+      fetchFeedback();
+    }
+  }, [messageId, setMessageFeedback, activeFeedback]);
 
   const handleThumbsUp = async () => {
     if (isLoading) return;
@@ -46,11 +55,15 @@ const ThumbsUp = ({ messageId }: { messageId: string }) => {
         throw new Error('Failed to save feedback');
       }
 
-      setIsActive(!isActive); // Toggle para permitir quitar el thumbs up
-      if (!isActive) {
-        toast.success('¡Gracias por tu valoración positiva!');
-      } else {
+      const data = await response.json();
+
+      // Actualizar el estado según la acción realizada
+      if (data.action === 'removed') {
+        setMessageFeedback(messageId, null);
         toast.info('Has eliminado tu valoración');
+      } else if (data.action === 'added' || data.action === 'changed') {
+        setMessageFeedback(messageId, 'positive');
+        toast.success('¡Gracias por tu valoración positiva!');
       }
     } catch (error) {
       console.error('Error saving thumbs up:', error);

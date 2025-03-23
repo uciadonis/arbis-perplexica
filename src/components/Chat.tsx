@@ -6,6 +6,8 @@ import { File, Message } from './ChatWindow';
 import MessageBox from './MessageBox';
 import MessageBoxLoading from './MessageBoxLoading';
 import { cn } from '@/lib/utils';
+import { FeedbackProvider } from '@/context/FeedbackContext';
+
 const Chat = ({
   loading,
   messages,
@@ -65,29 +67,31 @@ const Chat = ({
     <div className="flex flex-col h-screen w-full overflow-hidden mx-auto">
       <div className="flex-1 overflow-y-auto relative">
         <div className="px-4 max-w-screen-lg mx-auto">
-          {messages.map((msg, i) => {
-            const isLast = i === messages.length - 1;
+          <FeedbackProvider>
+            {messages.map((msg, i) => {
+              const isLast = i === messages.length - 1;
 
-            return (
-              <Fragment key={msg.messageId}>
-                <MessageBox
-                  key={i}
-                  message={msg}
-                  messageIndex={i}
-                  history={messages}
-                  loading={loading}
-                  dividerRef={isLast ? dividerRef : undefined}
-                  isLast={isLast}
-                  rewrite={rewrite}
-                  sendMessage={sendMessage}
-                />
-                {!isLast && msg.role === 'assistant' && (
-                  <div className="h-px w-full bg-light-secondary dark:bg-dark-secondary" />
-                )}
-              </Fragment>
-            );
-          })}
-          {loading && !messageAppeared && <MessageBoxLoading />}
+              return (
+                <Fragment key={msg.messageId}>
+                  <MessageBox
+                    key={i}
+                    message={msg}
+                    messageIndex={i}
+                    history={messages}
+                    loading={loading}
+                    dividerRef={isLast ? dividerRef : undefined}
+                    isLast={isLast}
+                    rewrite={rewrite}
+                    sendMessage={sendMessage}
+                  />
+                  {!isLast && msg.role === 'assistant' && (
+                    <div className="h-px w-full bg-light-secondary dark:bg-dark-secondary" />
+                  )}
+                </Fragment>
+              );
+            })}
+            {loading && !messageAppeared && <MessageBoxLoading />}
+          </FeedbackProvider>
         </div>
         {/* <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none bg-gradient-to-t from-white dark:from-gray-900 to-transparent"></div> */}
       </div>
