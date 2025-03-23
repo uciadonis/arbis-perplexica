@@ -26,3 +26,12 @@ export const chats = sqliteTable('chats', {
     .$type<File[]>()
     .default(sql`'[]'`),
 });
+
+export const feedbacks = sqliteTable('feedbacks', {
+  id: integer('id').primaryKey(),
+  userId: text('userId').notNull(),
+  messageId: text('messageId').notNull(),
+  feedback: text('feedback', { enum: ['positive', 'negative'] }).notNull(),
+  createdAt: text('createdAt').notNull(),
+  comment: text('comment'),
+});

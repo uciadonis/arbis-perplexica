@@ -8,6 +8,13 @@
       "when": 1742619649356,
       "tag": "0000_fair_wallflower",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1742756964807,
+      "tag": "0001_shiny_strong_guy",
+      "breakpoints": true
     }
   ]
 }
