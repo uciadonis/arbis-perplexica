@@ -1,10 +1,29 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ThumbsUp as ThumbsUpIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 const ThumbsUp = ({ messageId }: { messageId: string }) => {
   const [isActive, setIsActive] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Cargar estado de feedback al montar el componente
+  useEffect(() => {
+    const fetchFeedback = async () => {
+      try {
+        const response = await fetch(`/api/feedback?messageId=${messageId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.feedback && data.feedback.feedback === 'positive') {
+            setIsActive(true);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching feedback:', error);
+      }
+    };
+
+    fetchFeedback();
+  }, [messageId]);
 
   const handleThumbsUp = async () => {
     if (isLoading) return;
@@ -27,8 +46,12 @@ const ThumbsUp = ({ messageId }: { messageId: string }) => {
         throw new Error('Failed to save feedback');
       }
 
-      setIsActive(true);
-      toast.success('¡Gracias por tu valoración positiva!');
+      setIsActive(!isActive); // Toggle para permitir quitar el thumbs up
+      if (!isActive) {
+        toast.success('¡Gracias por tu valoración positiva!');
+      } else {
+        toast.info('Has eliminado tu valoración');
+      }
     } catch (error) {
       console.error('Error saving thumbs up:', error);
       toast.error('No se pudo guardar la valoración');
@@ -40,7 +63,7 @@ const ThumbsUp = ({ messageId }: { messageId: string }) => {
   return (
     <button
       onClick={handleThumbsUp}
-      disabled={isActive || isLoading}
+      disabled={isLoading}
       className={`p-2 rounded-xl transition duration-200 hover:bg-light-secondary dark:hover:bg-dark-secondary ${
         isActive
           ? 'text-green-500 dark:text-green-400'

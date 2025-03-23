@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ThumbsDown as ThumbsDownIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -7,10 +7,65 @@ const ThumbsDown = ({ messageId }: { messageId: string }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [feedbackComment, setFeedbackComment] = useState('');
+  const [existingComment, setExistingComment] = useState('');
+
+  // Cargar estado de feedback al montar el componente
+  useEffect(() => {
+    const fetchFeedback = async () => {
+      try {
+        const response = await fetch(`/api/feedback?messageId=${messageId}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.feedback && data.feedback.feedback === 'negative') {
+            setIsActive(true);
+            if (data.feedback.comment) {
+              setExistingComment(data.feedback.comment);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching feedback:', error);
+      }
+    };
+
+    fetchFeedback();
+  }, [messageId]);
 
   const handleThumbsDown = async () => {
     if (isLoading) return;
 
+    // Si ya está activo, eliminamos la valoración
+    if (isActive) {
+      setIsLoading(true);
+      try {
+        const response = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messageId,
+            feedback: 'positive', // Esto eliminará el negativo existente
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to remove feedback');
+        }
+
+        setIsActive(false);
+        setExistingComment('');
+        toast.info('Has eliminado tu valoración');
+      } catch (error) {
+        console.error('Error removing thumbs down:', error);
+        toast.error('No se pudo eliminar la valoración');
+      } finally {
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    // Si no estamos mostrando el formulario, lo mostramos
     if (!showFeedbackForm) {
       setShowFeedbackForm(true);
       return;
@@ -37,6 +92,7 @@ const ThumbsDown = ({ messageId }: { messageId: string }) => {
 
       setIsActive(true);
       setShowFeedbackForm(false);
+      setExistingComment(feedbackComment);
       toast.success('¡Gracias por tu valoración!');
     } catch (error) {
       console.error('Error saving thumbs down:', error);
@@ -50,17 +106,18 @@ const ThumbsDown = ({ messageId }: { messageId: string }) => {
     <div className="relative">
       <button
         onClick={handleThumbsDown}
-        disabled={isActive || isLoading}
+        disabled={isLoading}
         className={`p-2 rounded-xl transition duration-200 hover:bg-light-secondary dark:hover:bg-dark-secondary ${
           isActive
             ? 'text-red-500 dark:text-red-400'
             : 'text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white'
         } ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+        title={isActive && existingComment ? existingComment : ''}
       >
         <ThumbsDownIcon size={18} />
       </button>
 
-      {showFeedbackForm && !isActive && (
+      {showFeedbackForm && !isActive && !isLoading && (
         <div className="absolute bottom-full right-0 mb-2 p-3 bg-white dark:bg-dark-primary rounded-md shadow-lg w-64 z-50 border border-light-secondary dark:border-dark-secondary">
           <p className="text-sm text-black dark:text-white mb-2">
             ¿Por qué no te gustó esta respuesta?
