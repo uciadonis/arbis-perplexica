@@ -38,9 +38,9 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
   ];
 
   return (
-    <div>
-      <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-16 lg:flex-col">
-        {/* <div className="flex grow flex-col items-center justify-between gap-y-5 overflow-y-auto bg-light-secondary dark:bg-dark-secondary px-2 py-8"> */}
+    <div className="flex h-full min-h-[100dvh]">
+      {/* Desktop Sidebar */}
+      <div className="hidden lg:block lg:inset-y-0 lg:z-50 lg:flex lg:w-16 lg:flex-col">
         <div className="flex grow flex-col items-center justify-between gap-y-5 overflow-y-auto bg-[#1D3752] dark:bg-dark-secondary px-2 py-8">
           <a href="/">
             <SquarePen className="cursor-pointer text-light-primary dark:text-white" />
@@ -71,6 +71,7 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
         </div>
       </div>
 
+      {/* Mobile Navbar */}
       <div className="fixed bottom-0 w-full z-50 flex flex-row items-center gap-x-6 bg-light-primary dark:bg-dark-primary px-4 py-4 shadow-sm lg:hidden">
         {navLinks.map((link, i) => (
           <Link
@@ -92,7 +93,10 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
         ))}
       </div>
 
-      <Layout>{children}</Layout>
+      {/* Contenido principal */}
+      <div className="flex-1 h-screen overflow-hidden bg-[#1D3752] p-2">
+        <Layout>{children}</Layout>
+      </div>
     </div>
   );
 };
