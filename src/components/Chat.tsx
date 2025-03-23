@@ -64,7 +64,7 @@ const Chat = ({
   return (
     <div className="flex flex-col h-screen w-full overflow-hidden mx-auto">
       <div className="flex-1 overflow-y-auto relative">
-        <div className="max-w-screen-lg mx-auto">
+        <div className="px-4 max-w-screen-lg mx-auto">
           {messages.map((msg, i) => {
             const isLast = i === messages.length - 1;
 
@@ -93,7 +93,7 @@ const Chat = ({
       <div className="flex flex-col pb-24 lg:pb-2">
         <div className="max-w-screen-lg w-full mx-auto">
           <div className="lg:w-3/12"></div>
-          <div className="lg:w-9/12">
+          <div className=" px-4 lg:w-9/12">
             <MessageInput
               loading={loading}
               sendMessage={sendMessage}

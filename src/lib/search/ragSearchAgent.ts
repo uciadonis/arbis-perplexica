@@ -13,17 +13,29 @@ import {
 } from '@langchain/core/runnables';
 import { BaseMessage } from '@langchain/core/messages';
 import { StringOutputParser } from '@langchain/core/output_parsers';
+import LineListOutputParser from '../outputParsers/listLineOutputParser';
 import LineOutputParser from '../outputParsers/lineOutputParser';
+import { getDocumentsFromLinks } from '../utils/documents';
 import { Document } from 'langchain/document';
-import path from 'path';
-import fs from 'fs';
+import { searchSearxng } from '../searxng';
+import path from 'node:path';
+import fs from 'node:fs';
 import computeSimilarity from '../utils/computeSimilarity';
 import formatChatHistoryAsString from '../utils/formatHistory';
 import eventEmitter from 'events';
 import { StreamEvent } from '@langchain/core/tracers/log_stream';
-import { IterableReadableStream } from '@langchain/core/utils/stream';
-import { MetaSearchAgentType } from './metaSearchAgent';
-import { searchRag, RAGQueryResult, RAGRelationship } from '../rag/ragSearch';
+import { RAGQueryResult, searchRag } from '../rag/ragSearch';
+
+export interface MetaSearchAgentType {
+  searchAndAnswer: (
+    message: string,
+    history: BaseMessage[],
+    llm: BaseChatModel,
+    embeddings: Embeddings,
+    optimizationMode: 'speed' | 'balanced' | 'quality',
+    fileIds: string[],
+  ) => Promise<eventEmitter>;
+}
 
 interface Config {
   searchWeb: boolean;
@@ -55,14 +67,16 @@ class RAGSearchAgent implements MetaSearchAgentType {
       PromptTemplate.fromTemplate(this.config.queryGeneratorPrompt),
       llm,
       this.strParser,
-      RunnableLambda.from(async (llmOutput: string) => {
-        console.log('=======>', 'Going to search rag');
-        return llmOutput;
-      }),
       RunnableLambda.from(async (input: string) => {
+        const linksOutputParser = new LineListOutputParser({
+          key: 'links',
+        });
+
         const questionOutputParser = new LineOutputParser({
           key: 'question',
         });
+
+        const links = await linksOutputParser.parse(input);
         let question = this.config.summarizer
           ? await questionOutputParser.parse(input)
           : input;
@@ -71,30 +85,145 @@ class RAGSearchAgent implements MetaSearchAgentType {
           return { query: '', docs: [] };
         }
 
-        const res = await searchRag(question);
+        if (links.length > 0) {
+          if (question.length === 0) {
+            question = 'summarize';
+          }
 
-        const relations = res.relations;
-        const hyde_document = res.hyde_document;
+          let docs: Document[] = [];
 
-        const documents = res.results.map(
-          (result: RAGQueryResult) =>
-            new Document({
-              pageContent: result.content,
-              metadata: {
-                title: result.document_title,
-                url: result.document_url,
-                section: result.section,
-                importance_score: result.similarity_score,
-              },
+          const linkDocs = await getDocumentsFromLinks({ links });
+
+          const docGroups: Document[] = [];
+
+          linkDocs.map((doc) => {
+            const URLDocExists = docGroups.find(
+              (d) =>
+                d.metadata.url === doc.metadata.url &&
+                d.metadata.totalDocs < 10,
+            );
+
+            if (!URLDocExists) {
+              docGroups.push({
+                ...doc,
+                metadata: {
+                  ...doc.metadata,
+                  totalDocs: 1,
+                },
+              });
+            }
+
+            const docIndex = docGroups.findIndex(
+              (d) =>
+                d.metadata.url === doc.metadata.url &&
+                d.metadata.totalDocs < 10,
+            );
+
+            if (docIndex !== -1) {
+              docGroups[docIndex].pageContent =
+                docGroups[docIndex].pageContent + `\n\n` + doc.pageContent;
+              docGroups[docIndex].metadata.totalDocs += 1;
+            }
+          });
+
+          await Promise.all(
+            docGroups.map(async (doc) => {
+              const res = await llm.invoke(`
+            You are a web search summarizer, tasked with summarizing a piece of text retrieved from a web search. Your job is to summarize the 
+            text into a detailed, 2-4 paragraph explanation that captures the main ideas and provides a comprehensive answer to the query.
+            If the query is \"summarize\", you should provide a detailed summary of the text. If the query is a specific question, you should answer it in the summary.
+            
+            - **Journalistic tone**: The summary should sound professional and journalistic, not too casual or vague.
+            - **Thorough and detailed**: Ensure that every key point from the text is captured and that the summary directly answers the query.
+            - **Not too lengthy, but detailed**: The summary should be informative but not excessively long. Focus on providing detailed information in a concise format.
+
+            The text will be shared inside the \`text\` XML tag, and the query inside the \`query\` XML tag.
+
+            <example>
+            1. \`<text>
+            Docker is a set of platform-as-a-service products that use OS-level virtualization to deliver software in packages called containers. 
+            It was first released in 2013 and is developed by Docker, Inc. Docker is designed to make it easier to create, deploy, and run applications 
+            by using containers.
+            </text>
+
+            <query>
+            What is Docker and how does it work?
+            </query>
+
+            Response:
+            Docker is a revolutionary platform-as-a-service product developed by Docker, Inc., that uses container technology to make application 
+            deployment more efficient. It allows developers to package their software with all necessary dependencies, making it easier to run in 
+            any environment. Released in 2013, Docker has transformed the way applications are built, deployed, and managed.
+            \`
+            2. \`<text>
+            The theory of relativity, or simply relativity, encompasses two interrelated theories of Albert Einstein: special relativity and general
+            relativity. However, the word "relativity" is sometimes used in reference to Galilean invariance. The term "theory of relativity" was based
+            on the expression "relative theory" used by Max Planck in 1906. The theory of relativity usually encompasses two interrelated theories by
+            Albert Einstein: special relativity and general relativity. Special relativity applies to all physical phenomena in the absence of gravity.
+            General relativity explains the law of gravitation and its relation to other forces of nature. It applies to the cosmological and astrophysical
+            realm, including astronomy.
+            </text>
+
+            <query>
+            summarize
+            </query>
+
+            Response:
+            The theory of relativity, developed by Albert Einstein, encompasses two main theories: special relativity and general relativity. Special
+            relativity applies to all physical phenomena in the absence of gravity, while general relativity explains the law of gravitation and its
+            relation to other forces of nature. The theory of relativity is based on the concept of "relative theory," as introduced by Max Planck in
+            1906. It is a fundamental theory in physics that has revolutionized our understanding of the universe.
+            \`
+            </example>
+
+            Everything below is the actual data you will be working with. Good luck!
+
+            <query>
+            ${question}
+            </query>
+
+            <text>
+            ${doc.pageContent}
+            </text>
+
+            Make sure to answer the query in the summary.
+          `);
+
+              const document = new Document({
+                pageContent: res.content as string,
+                metadata: {
+                  title: doc.metadata.title,
+                  url: doc.metadata.url,
+                },
+              });
+
+              docs.push(document);
             }),
-        );
+          );
 
-        return {
-          query: question,
-          docs: documents,
-          relations,
-          // hyde: hyde_document,
-        };
+          return { query: question, docs: docs };
+        } else {
+          question = question.replace(/<think>.*?<\/think>/g, '');
+
+          const res = await searchRag(question);
+          const relations = res.relations;
+          // const hyde_document = res.hyde_document;
+
+          const documents = res.results.map(
+            (result: RAGQueryResult) =>
+              new Document({
+                pageContent: result.content,
+                metadata: {
+                  title: result.document_title,
+                  url: result.document_url,
+                  section: result.section,
+                  importance_score: result.similarity_score,
+                },
+              }),
+          );
+
+          return { query: question, docs: documents, relations };
+        }
       }),
     ]);
   }
@@ -114,25 +243,21 @@ class RAGSearchAgent implements MetaSearchAgentType {
           const processedHistory = formatChatHistoryAsString(
             input.chat_history,
           );
+
           let docs: Document[] | null = null;
-          let relations: RAGRelationship[] | undefined = undefined;
           let query = input.query;
 
           if (this.config.searchWeb) {
             const searchRetrieverChain =
               await this.createSearchRetrieverChain(llm);
+
             const searchRetrieverResult = await searchRetrieverChain.invoke({
               chat_history: processedHistory,
               query,
             });
-            console.log(
-              '=======>',
-              'Search retriever result:',
-              searchRetrieverResult,
-            );
+
             query = searchRetrieverResult.query;
             docs = searchRetrieverResult.docs;
-            relations = searchRetrieverResult.relations;
           }
 
           const sortedDocs = await this.rerankDocs(
@@ -143,29 +268,18 @@ class RAGSearchAgent implements MetaSearchAgentType {
             optimizationMode,
           );
 
-          const processedDocs = this.processDocs(
-            sortedDocs || [],
-            relations || [],
-          );
-
-          return processedDocs;
-        }).withConfig({
-          runName: 'FinalSourceRetriever',
-        }),
-        // .pipe(this.processDocs),
+          return sortedDocs;
+        })
+          .withConfig({
+            runName: 'FinalSourceRetriever',
+          })
+          .pipe(this.processDocs),
       }),
-
       ChatPromptTemplate.fromMessages([
         ['system', this.config.responsePrompt],
         new MessagesPlaceholder('chat_history'),
         ['user', '{query}'],
       ]),
-
-      // RunnableLambda.from(async (llmOutput: string) => {
-      //   console.log('before final response:222------>', llmOutput);
-      //   // Retornamos la salida sin modificar para que siga el flujo
-      //   return llmOutput;
-      // }),
       llm,
       this.strParser,
     ]).withConfig({
@@ -184,24 +298,24 @@ class RAGSearchAgent implements MetaSearchAgentType {
       return docs;
     }
 
-    // Cargar y preparar los datos de los archivos locales
     const filesData = fileIds
       .map((file) => {
         const filePath = path.join(process.cwd(), 'uploads', file);
+
         const contentPath = filePath + '-extracted.json';
         const embeddingsPath = filePath + '-embeddings.json';
 
         const content = JSON.parse(fs.readFileSync(contentPath, 'utf8'));
-        const embeddingsData = JSON.parse(
-          fs.readFileSync(embeddingsPath, 'utf8'),
-        );
+        const embeddings = JSON.parse(fs.readFileSync(embeddingsPath, 'utf8'));
 
         const fileSimilaritySearchObject = content.contents.map(
-          (c: string, i: number) => ({
-            fileName: content.title,
-            content: c,
-            embeddings: embeddingsData.embeddings[i],
-          }),
+          (c: string, i: number) => {
+            return {
+              fileName: content.title,
+              content: c,
+              embeddings: embeddings.embeddings[i],
+            };
+          },
         );
 
         return fileSimilaritySearchObject;
@@ -227,14 +341,18 @@ class RAGSearchAgent implements MetaSearchAgentType {
             pageContent: fileData.content,
             metadata: {
               title: fileData.fileName,
-              url: 'File',
+              url: `File`,
             },
           });
         });
 
         const similarity = filesData.map((fileData, i) => {
           const sim = computeSimilarity(queryEmbedding, fileData.embeddings);
-          return { index: i, similarity: sim };
+
+          return {
+            index: i,
+            similarity: sim,
+          };
         });
 
         let sortedDocs = similarity
@@ -269,7 +387,7 @@ class RAGSearchAgent implements MetaSearchAgentType {
             pageContent: fileData.content,
             metadata: {
               title: fileData.fileName,
-              url: 'File',
+              url: `File`,
             },
           });
         }),
@@ -279,7 +397,11 @@ class RAGSearchAgent implements MetaSearchAgentType {
 
       const similarity = docEmbeddings.map((docEmbedding, i) => {
         const sim = computeSimilarity(queryEmbedding, docEmbedding);
-        return { index: i, similarity: sim };
+
+        return {
+          index: i,
+          similarity: sim,
+        };
       });
 
       const sortedDocs = similarity
@@ -290,56 +412,21 @@ class RAGSearchAgent implements MetaSearchAgentType {
 
       return sortedDocs;
     }
+
+    return [];
   }
 
-  private processDocs(sortedDocs: Document[], relations: RAGRelationship[]) {
-    // Procesar documentos
-    // const docs_str = sortedDocs
-    //   .map(
-    //     (_, index) =>
-    //       `${index + 1}. ${sortedDocs[index].metadata.title} ${sortedDocs[index].pageContent}`,
-    //   )
-    //   .join('\n');
-
-    const docs_str = sortedDocs.map((_, index) => {
-      const doc = sortedDocs[index];
-      const title = doc.metadata.title;
-      const url = doc.metadata.url || 'URL no disponible';
-      // return `${index + 1}. ${title}\n${doc.pageContent}\nFuente: ${url}\n---`;
-      return `DOCUMENTO ${index + 1}
-        Título: ${title}
-        Contenido:
-        ${doc.pageContent}
-        Fuente: ${url}
-        ---
-        `;
-    });
-
-    // Procesar relaciones si existen
-    if (relations.length === 0) {
-      return docs_str;
-    }
-
-    // Continuar con el índice después del último documento
-    // const startRelationIndex = sortedDocs.length + 1;
-    let relations_str = 'Knowledge graph:\n';
-    for (let i = 0; i < relations.length && i < 25; i++) {
-      const relation = relations[i];
-      // relations_str += relations
-      //   .map(
-      //     (r, i) => `${i + 1}. (${r.source}) -[${r.relation}]-> (${r.target})`,
-      //   )
-      //   .join('\n');
-      // relations_str += `${i + 1}. ${relation.source} ${relation.relation} ${relation.target}\n`;
-      relations_str += `${i + 1}. (${relation.source}) -[${relation.relation}]-> (${relation.target})\n`;
-    }
-
-    // Combinar ambos
-    return `${docs_str}\n\n${relations_str}`;
+  private processDocs(docs: Document[]) {
+    return docs
+      .map(
+        (_, index) =>
+          `${index + 1}. ${docs[index].metadata.title} ${docs[index].pageContent}`,
+      )
+      .join('\n');
   }
 
   private async handleStream(
-    stream: IterableReadableStream<StreamEvent>,
+    stream: AsyncGenerator<StreamEvent, any, any>,
     emitter: eventEmitter,
   ) {
     for await (const event of stream) {
@@ -347,6 +434,7 @@ class RAGSearchAgent implements MetaSearchAgentType {
         event.event === 'on_chain_end' &&
         event.name === 'FinalSourceRetriever'
       ) {
+        ``;
         emitter.emit(
           'data',
           JSON.stringify({ type: 'sources', data: event.data.output }),
@@ -392,7 +480,9 @@ class RAGSearchAgent implements MetaSearchAgentType {
         chat_history: history,
         query: message,
       },
-      { version: 'v1' },
+      {
+        version: 'v1',
+      },
     );
 
     this.handleStream(stream, emitter);
