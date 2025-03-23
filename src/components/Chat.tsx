@@ -87,30 +87,34 @@ const Chat = ({
               </Fragment>
             );
           })}
+          {loading && !messageAppeared && <MessageBoxLoading />}
         </div>
         {/* <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none bg-gradient-to-t from-white dark:from-gray-900 to-transparent"></div> */}
       </div>
-      <div className="flex flex-col pb-24 lg:pb-2">
-        <div className="max-w-screen-lg w-full mx-auto">
-          <div className="lg:w-3/12"></div>
-          <div className=" px-4 lg:w-9/12">
-            <MessageInput
-              loading={loading}
-              sendMessage={sendMessage}
-              fileIds={fileIds}
-              setFileIds={setFileIds}
-              files={files}
-              setFiles={setFiles}
-            />
-            <div className="text-center mt-4">
-              <p className="dark:text-white/70 text-black/65 text-xs">
-                Arbis puede cometer errores. Considera verificar la información
-                importante.
-              </p>
+      <div ref={messageEnd} className="h-0" />
+      {dividerWidth > 0 && (
+        <div className="flex flex-col pb-24 lg:pb-2">
+          <div className="max-w-screen-lg w-full mx-auto">
+            <div className="lg:w-3/12"></div>
+            <div className=" px-4 lg:w-9/12">
+              <MessageInput
+                loading={loading}
+                sendMessage={sendMessage}
+                fileIds={fileIds}
+                setFileIds={setFileIds}
+                files={files}
+                setFiles={setFiles}
+              />
+              <div className="text-center mt-4">
+                <p className="dark:text-white/70 text-black/65 text-xs">
+                  Arbis puede cometer errores. Considera verificar la
+                  información importante.
+                </p>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
