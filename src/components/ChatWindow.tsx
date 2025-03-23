@@ -573,7 +573,7 @@ const ChatWindow = ({ id }: { id?: string }) => {
       <div className="flex flex-col h-full w-full">
         <div className="relative h-full w-full">
           {messages.length > 0 ? (
-            <>
+            <div className="relative flex flex-col h-full w-full">
               <Navbar chatId={chatId!} messages={messages} />
               <Chat
                 loading={loading}
@@ -586,7 +586,7 @@ const ChatWindow = ({ id }: { id?: string }) => {
                 files={files}
                 setFiles={setFiles}
               />
-            </>
+            </div>
           ) : (
             <EmptyChat
               sendMessage={sendMessage}
