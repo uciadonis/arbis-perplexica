@@ -34,7 +34,7 @@ const CopilotToggle = ({
             : 'text-black/50 dark:text-white/50 group-hover:text-black dark:group-hover:text-white',
         )}
       >
-        Copilot
+        Copiloto
       </p>
     </div>
   );

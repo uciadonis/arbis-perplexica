@@ -92,7 +92,7 @@ const Searchvideos = ({
         >
           <div className="flex flex-row items-center space-x-2">
             <VideoIcon size={17} />
-            <p>Search videos</p>
+            <p>Buscar videos</p>
           </div>
           <PlusIcon className="text-[#0A81E4]" size={17} />
         </button>

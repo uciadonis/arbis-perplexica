@@ -137,7 +137,7 @@ const MessageBox = ({
                   size={20}
                 />
                 <h3 className="text-black dark:text-white font-medium text-lg">
-                  Answer
+                  Respuesta
                 </h3>
               </div>
 
@@ -191,7 +191,9 @@ const MessageBox = ({
                     <div className="flex flex-col space-y-3 text-black dark:text-white">
                       <div className="flex flex-row items-center space-x-2 mt-4">
                         <Layers3 />
-                        <h3 className="text-xl font-medium">Related</h3>
+                        <h3 className="text-xl font-medium">
+                          Preguntas relacionadas
+                        </h3>
                       </div>
                       <div className="flex flex-col space-y-3">
                         {message.suggestions.map((suggestion, i) => (
