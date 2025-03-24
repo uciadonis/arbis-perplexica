@@ -5,7 +5,6 @@ import MessageInput from './MessageInput';
 import { File, Message } from './ChatWindow';
 import MessageBox from './MessageBox';
 import MessageBoxLoading from './MessageBoxLoading';
-import { cn } from '@/lib/utils';
 import { FeedbackProvider } from '@/context/FeedbackContext';
 
 const Chat = ({
