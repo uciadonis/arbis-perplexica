@@ -24,7 +24,7 @@ import computeSimilarity from '../utils/computeSimilarity';
 import formatChatHistoryAsString from '../utils/formatHistory';
 import eventEmitter from 'events';
 import { StreamEvent } from '@langchain/core/tracers/log_stream';
-import { RAGQueryResult, searchRag } from '../rag/ragSearch';
+import { RAGQueryResult, RAGRelationship, searchRag } from '../rag/ragSearch';
 
 export interface MetaSearchAgentType {
   searchAndAnswer: (
@@ -50,6 +50,11 @@ interface Config {
 type BasicChainInput = {
   chat_history: BaseMessage[];
   query: string;
+};
+
+type DocsAndRelations = BasicChainInput & {
+  docs: Document[];
+  relations: RAGRelationship[];
 };
 
 class RAGSearchAgent implements MetaSearchAgentType {
@@ -236,38 +241,66 @@ class RAGSearchAgent implements MetaSearchAgentType {
   ) {
     return RunnableSequence.from([
       RunnableMap.from({
-        query: (input: BasicChainInput) => input.query,
-        chat_history: (input: BasicChainInput) => input.chat_history,
-        date: () => new Date().toISOString(),
-        context: RunnableLambda.from(async (input: BasicChainInput) => {
-          const processedHistory = formatChatHistoryAsString(
-            input.chat_history,
-          );
+        docsAndRelations: RunnableLambda.from(
+          async (input: BasicChainInput) => {
+            console.log('chat_history------>', input.chat_history);
+            const processedHistory = formatChatHistoryAsString(
+              input.chat_history,
+            );
 
-          let docs: Document[] | null = null;
-          let query = input.query;
+            let docs: Document[] | null = null;
+            let query = input.query;
+            let relations: RAGRelationship[] | null = null;
 
-          if (this.config.searchWeb) {
-            const searchRetrieverChain =
-              await this.createSearchRetrieverChain(llm);
+            if (this.config.searchWeb) {
+              const searchRetrieverChain =
+                await this.createSearchRetrieverChain(llm);
 
-            const searchRetrieverResult = await searchRetrieverChain.invoke({
-              chat_history: processedHistory,
+              const searchRetrieverResult = await searchRetrieverChain.invoke({
+                chat_history: processedHistory,
+                query,
+              });
+
+              query = searchRetrieverResult.query;
+              docs = searchRetrieverResult.docs;
+              relations = searchRetrieverResult.relations ?? null;
+            }
+
+            const sortedDocs = await this.rerankDocs(
               query,
-            });
+              docs ?? [],
+              fileIds,
+              embeddings,
+              optimizationMode,
+            );
 
-            query = searchRetrieverResult.query;
-            docs = searchRetrieverResult.docs;
-          }
-
-          const sortedDocs = await this.rerankDocs(
-            query,
-            docs ?? [],
-            fileIds,
-            embeddings,
-            optimizationMode,
-          );
-
+            return {
+              query,
+              chat_history: input.chat_history,
+              docs: sortedDocs,
+              relations,
+            };
+          },
+        ),
+      }),
+      RunnableLambda.from(async (input) => {
+        return { ...input.docsAndRelations };
+      }),
+      RunnableMap.from({
+        query: (input: DocsAndRelations) => input.query,
+        chat_history: (input: DocsAndRelations) => {
+          return input.chat_history;
+        },
+        date: () => new Date().toISOString(),
+        graph_relations: RunnableLambda.from(
+          async (input: DocsAndRelations) => {
+            const relations = input.relations || [];
+            const relations_string = this.formatRelationsAsText(relations);
+            return relations_string;
+          },
+        ),
+        context: RunnableLambda.from(async (input: DocsAndRelations) => {
+          const sortedDocs = input.docs || [];
           return sortedDocs;
         })
           .withConfig({
@@ -275,11 +308,25 @@ class RAGSearchAgent implements MetaSearchAgentType {
           })
           .pipe(this.processDocs),
       }),
+
+      // RunnableLambda.from(async (input) => {
+      //   console.log('input-2------>', input);
+      //   return input;
+      // }),
+
       ChatPromptTemplate.fromMessages([
         ['system', this.config.responsePrompt],
         new MessagesPlaceholder('chat_history'),
+        // new MessagesPlaceholder('graph_relations'),
         ['user', '{query}'],
       ]),
+
+      RunnableLambda.from(async (llmOutput: string) => {
+        console.log('before final response:222------>', llmOutput);
+        // Retornamos la salida sin modificar para que siga el flujo
+        return llmOutput;
+      }),
+
       llm,
       this.strParser,
     ]).withConfig({
@@ -416,7 +463,16 @@ class RAGSearchAgent implements MetaSearchAgentType {
     return [];
   }
 
-  private processDocs(docs: Document[]) {
+  private formatRelationsAsText(relations: RAGRelationship[]): string {
+    let relations_str = 'Knowledge graph:\n';
+    for (let i = 0; i < relations.length && i < 50; i++) {
+      const relation = relations[i];
+      relations_str += `${i + 1}. (${relation.source}) -[${relation.relation}]-> (${relation.target})\n`;
+    }
+    return relations_str;
+  }
+
+  private processDocs(docs: Document[]): string {
     return docs
       .map(
         (_, index) =>

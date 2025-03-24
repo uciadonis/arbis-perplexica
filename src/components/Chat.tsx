@@ -75,7 +75,7 @@ const Chat = ({
                     rewrite={rewrite}
                     sendMessage={sendMessage}
                     shouldScroll={i === messages.length - 1}
-                    showSkeleton={loading && !messageAppeared}
+                    // showSkeleton={loading && !messageAppeared}
                   />
                   {!isLast && msg.role === 'assistant' && (
                     <div className="h-px w-full bg-light-secondary dark:bg-dark-secondary" />

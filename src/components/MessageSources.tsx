@@ -23,8 +23,6 @@ const MessageSources = ({ sources }: { sources: Document[] }) => {
     document.body.classList.add('overflow-hidden-scrollable');
   };
 
-  console.log('=====>SS', sources);
-
   if (!sources || !Array.isArray(sources) || sources.length === 0) {
     return <></>;
   }

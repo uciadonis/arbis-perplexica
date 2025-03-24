@@ -149,6 +149,10 @@ export const ragSearchResponsePrompt = `
     - The citation requirements DO NOT apply to responses for basic greetings and identity questions as specified in the Exceptions section.
     - Avoid citing unsupported assumptions or personal interpretations; if no source supports a statement, clearly indicate the limitation.
 
+    ### Knowledge Graph
+    - Use the following knowledge graph to help you answer the question:
+    {graph_relations}
+
     <context>
     {context}
     </context>
