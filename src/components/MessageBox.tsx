@@ -1,7 +1,7 @@
 'use client';
 
 /* eslint-disable @next/next/no-img-element */
-import React, { MutableRefObject, useEffect, useState } from 'react';
+import React, { MutableRefObject, useEffect, useRef, useState } from 'react';
 import { Message } from './ChatWindow';
 import { cn } from '@/lib/utils';
 import {
@@ -36,6 +36,7 @@ const MessageBox = ({
   isLast,
   rewrite,
   sendMessage,
+  shouldScroll = true,
 }: {
   message: Message;
   messageIndex: number;
@@ -45,9 +46,22 @@ const MessageBox = ({
   isLast: boolean;
   rewrite: (messageId: string) => void;
   sendMessage: (message: string) => void;
+  shouldScroll?: boolean;
 }) => {
   const [parsedMessage, setParsedMessage] = useState(message.content);
   const [speechMessage, setSpeechMessage] = useState(message.content);
+
+  const messageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (shouldScroll && messageRef.current) {
+      // Desplaza el viewport para que este mensaje quede en la parte superior visible
+      messageRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      });
+    }
+  }, [shouldScroll]);
 
   useEffect(() => {
     const regex = /\[(\d+)\]/g;
@@ -94,7 +108,7 @@ const MessageBox = ({
   };
 
   return (
-    <div className={isLast ? 'pb-16' : 'pt-8'}>
+    <div ref={messageRef}>
       {message.role === 'user' && (
         <div
           className={cn(

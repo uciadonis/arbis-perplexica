@@ -49,16 +49,8 @@ const Chat = ({
   });
 
   useEffect(() => {
-    const scroll = () => {
-      messageEnd.current?.scrollIntoView({ behavior: 'smooth' });
-    };
-
     if (messages.length === 1) {
       document.title = `${messages[0].content.substring(0, 30)} - Arbis`;
-    }
-
-    if (messages[messages.length - 1]?.role == 'user') {
-      scroll();
     }
   }, [messages]);
 
@@ -82,6 +74,7 @@ const Chat = ({
                     isLast={isLast}
                     rewrite={rewrite}
                     sendMessage={sendMessage}
+                    shouldScroll={i === messages.length - 1}
                   />
                   {!isLast && msg.role === 'assistant' && (
                     <div className="h-px w-full bg-light-secondary dark:bg-dark-secondary" />
@@ -90,9 +83,9 @@ const Chat = ({
               );
             })}
             {loading && !messageAppeared && <MessageBoxLoading />}
+            <div className="h-16" />
           </FeedbackProvider>
         </div>
-        {/* <div className="absolute bottom-0 left-0 right-0 h-16 pointer-events-none bg-gradient-to-t from-white dark:from-gray-900 to-transparent"></div> */}
       </div>
       <div ref={messageEnd} className="h-0" />
       {dividerWidth > 0 && (
