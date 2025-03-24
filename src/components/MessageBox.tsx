@@ -94,7 +94,7 @@ const MessageBox = ({
   };
 
   return (
-    <div>
+    <div className={isLast ? 'pb-16' : 'pt-8'}>
       {message.role === 'user' && (
         <div
           className={cn(
