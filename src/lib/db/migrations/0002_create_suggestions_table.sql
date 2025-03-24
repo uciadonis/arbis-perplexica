@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS suggestions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  chatId TEXT NOT NULL,
+  messageId TEXT NOT NULL,
+  questions TEXT NOT NULL,
+  createdAt TEXT NOT NULL
+); 

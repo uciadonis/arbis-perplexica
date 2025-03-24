@@ -35,3 +35,11 @@ export const feedbacks = sqliteTable('feedbacks', {
   createdAt: text('createdAt').notNull(),
   comment: text('comment'),
 });
+
+export const suggestions = sqliteTable('suggestions', {
+  id: integer('id').primaryKey(),
+  chatId: text('chatId').notNull(),
+  messageId: text('messageId').notNull(),
+  questions: text('questions', { mode: 'json' }).$type<string[]>().notNull(),
+  createdAt: text('createdAt').notNull(),
+});
