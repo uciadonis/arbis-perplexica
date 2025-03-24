@@ -22,6 +22,7 @@ import { useSpeech } from 'react-text-to-speech';
 import ThinkBox from './ThinkBox';
 import ThumbsUp from './MessageActions/ThumbsUp';
 import ThumbsDown from './MessageActions/ThumbsDown';
+import MessageBoxLoading from './MessageBoxLoading';
 
 const ThinkTagProcessor = ({ children }: { children: React.ReactNode }) => {
   return <ThinkBox content={children as string} />;
@@ -37,6 +38,7 @@ const MessageBox = ({
   rewrite,
   sendMessage,
   shouldScroll = true,
+  showSkeleton = false,
 }: {
   message: Message;
   messageIndex: number;
@@ -47,6 +49,7 @@ const MessageBox = ({
   rewrite: (messageId: string) => void;
   sendMessage: (message: string) => void;
   shouldScroll?: boolean;
+  showSkeleton?: boolean;
 }) => {
   const [parsedMessage, setParsedMessage] = useState(message.content);
   const [speechMessage, setSpeechMessage] = useState(message.content);
@@ -108,7 +111,7 @@ const MessageBox = ({
   };
 
   return (
-    <div ref={messageRef}>
+    <div ref={messageRef} className={shouldScroll ? 'h-screen' : 'h-auto'}>
       {message.role === 'user' && (
         <div
           className={cn(
@@ -123,6 +126,8 @@ const MessageBox = ({
           </h2>
         </div>
       )}
+
+      {showSkeleton && <MessageBoxLoading />}
 
       {message.role === 'assistant' && (
         <div className="flex flex-col space-y-9 lg:space-y-0 lg:flex-row lg:justify-between lg:space-x-9">
