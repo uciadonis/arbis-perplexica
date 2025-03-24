@@ -38,8 +38,8 @@ export const searchRag = async (
   query: string,
   opts?: SearchRagOptions,
 ): Promise<RAGQueryResponse> => {
-  const ragApiURL = 'http://192.168.68.106:8000';
-  // const ragApiURL = 'http://10.200.82.78:8000';
+  // const ragApiURL = 'http://192.168.68.106:8000';
+  const ragApiURL = 'http://localhost:8000';
   const url = new URL(
     `${ragApiURL}/api/v1/rag/query-knowledge-graph?project_id=8e57648e-fd9b-4cd9-8092-663d49d679b4&use_hyde=true`,
   );
