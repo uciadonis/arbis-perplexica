@@ -85,8 +85,24 @@ class RAGSearchAgent implements MetaSearchAgentType {
           ? await questionOutputParser.parse(input)
           : input;
 
+        // if (question === 'not_needed') {
+        //   return { query: '', docs: [] };
+        // }
+
         if (question === 'not_needed') {
-          return { query: '', docs: [] };
+          return {
+            query: 'greeting_or_identity_question',
+            docs: [
+              new Document({
+                pageContent:
+                  'Este es un saludo o pregunta de identidad que debe responderse directamente según las excepciones.',
+                metadata: {
+                  title: 'Greeting',
+                  url: 'internal',
+                },
+              }),
+            ],
+          };
         }
 
         if (links.length > 0) {
