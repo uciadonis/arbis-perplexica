@@ -574,8 +574,8 @@ const ChatWindow = ({ id }: { id?: string }) => {
         <div className="relative h-full w-full">
           {messages.length > 0 ? (
             <div className="relative flex flex-col h-full w-full">
-              <Navbar chatId={chatId!} messages={messages} />
               <Chat
+                chatId={chatId!}
                 loading={loading}
                 messages={messages}
                 sendMessage={sendMessage}

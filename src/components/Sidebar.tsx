@@ -94,7 +94,7 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
       </div>
 
       {/* Contenido principal */}
-      <div className="flex-1 h-screen overflow-hidden bg-[#1D3752] p-2 pl-0">
+      <div className="flex-1 h-screen overflow-hidden bg-[#1D3752] lg:p-2 pl-0">
         <Layout>{children}</Layout>
       </div>
     </div>
