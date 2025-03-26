@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 const Home = () => {
   return (
-    <div>
+    <div className="h-full">
       <Suspense>
         <ChatWindow />
       </Suspense>

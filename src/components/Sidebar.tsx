@@ -38,7 +38,7 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
   ];
 
   return (
-    <div className="flex h-full min-h-[100dvh]">
+    <div className="flex h-full">
       {/* Desktop Sidebar */}
       <div className="hidden lg:block lg:inset-y-0 lg:z-50 lg:flex lg:w-16 lg:flex-col">
         <div className="flex grow flex-col items-center justify-between gap-y-5 overflow-y-auto bg-[#1D3752] dark:bg-dark-secondary px-2 py-8">
@@ -94,7 +94,7 @@ const Sidebar = ({ children }: { children: React.ReactNode }) => {
       </div>
 
       {/* Contenido principal */}
-      <div className="flex-1 h-screen overflow-hidden bg-[#1D3752] pl-0 lg:p-2 lg:pl-0">
+      <div className="flex-1 h-full overflow-hidden bg-[#1D3752] pl-0 lg:p-2 lg:pl-0">
         <Layout>{children}</Layout>
       </div>
     </div>

@@ -59,10 +59,11 @@ const Chat = ({
 
   return (
     <div className="flex flex-col h-full w-full overflow-hidden mx-auto">
-      <div className="flex-none h-8 bg-white dark:bg-black z-40">
+      <div className="flex-none h-8 bg-white dark:bg-black z-40 flex-shrink-0">
         <Navbar chatId={chatId!} messages={messages} />
       </div>
       <div className="flex-1 overflow-y-auto relative pt-8">
+        {/* <div className="h-96 overflow-y-auto relative pt-8"> */}
         <div className="px-4 max-w-screen-lg mx-auto">
           <FeedbackProvider>
             {messages.map((msg, i) => {
@@ -81,10 +82,10 @@ const Chat = ({
                     rewrite={rewrite}
                     sendMessage={sendMessage}
                     shouldScroll={
-                      // i === messages.length - 1 && msg.role === 'user'
-                      i === messages.length - 1
+                      i === messages.length - 1 && msg.role === 'user'
+                      // i === messages.length - 1
                     }
-                    // showSkeleton={loading && !messageAppeared}
+                    showSkeleton={loading && !messageAppeared}
                   />
                   {!isLast && msg.role === 'assistant' && (
                     <div className="h-px w-full bg-light-secondary dark:bg-dark-secondary" />
@@ -98,7 +99,7 @@ const Chat = ({
       </div>
       <div ref={messageEnd} className="h-0" />
       {/* {dividerWidth > 0 && ( */}
-      <div className="flex flex-col pb-24 lg:pb-2">
+      <div className="flex flex-col pb-24 lg:pb-2 flex-shrink-0">
         <div className="max-w-screen-lg w-full mx-auto">
           <div className="lg:w-3/12"></div>
           <div className=" px-4 lg:w-9/12">
