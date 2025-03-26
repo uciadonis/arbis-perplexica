@@ -4,7 +4,6 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 import MessageInput from './MessageInput';
 import { File, Message } from './ChatWindow';
 import MessageBox from './MessageBox';
-import MessageBoxLoading from './MessageBoxLoading';
 import { FeedbackProvider } from '@/context/FeedbackContext';
 import Navbar from './Navbar';
 
@@ -82,8 +81,8 @@ const Chat = ({
                     rewrite={rewrite}
                     sendMessage={sendMessage}
                     shouldScroll={
-                      i === messages.length - 1 && msg.role === 'user'
-                      // i === messages.length - 1
+                      // i === messages.length - 1 && msg.role === 'user'
+                      i === messages.length - 1
                     }
                     showSkeleton={loading && !messageAppeared}
                   />

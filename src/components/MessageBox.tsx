@@ -54,10 +54,12 @@ const MessageBox = ({
   const [parsedMessage, setParsedMessage] = useState(message.content);
   const [speechMessage, setSpeechMessage] = useState(message.content);
 
+  const [remainingHeight, setRemainingHeight] = useState<number | null>(null);
+
   const messageRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (shouldScroll && messageRef.current) {
+    if (shouldScroll && messageRef.current && message.role === 'user') {
       // Desplaza el viewport para que este mensaje quede en la parte superior visible
       messageRef.current.scrollIntoView({
         behavior: 'smooth',
@@ -65,6 +67,72 @@ const MessageBox = ({
       });
     }
   }, [shouldScroll]);
+
+  // // useEffect(() => {
+  // //   if (
+  // //     message.role === 'user' &&
+  // //     shouldScroll &&
+  // //     messageRef.current &&
+  // //     typeof window !== 'undefined' &&
+  // //     remainingHeight === null // Solo calcular una vez
+  // //   ) {
+  // //     const messageHeight = messageRef.current.offsetHeight;
+  // //     const screenHeight = window.innerHeight;
+  // //     const diff = screenHeight - messageHeight;
+
+  // //     if (diff > 0) {
+  // //       setRemainingHeight(diff);
+  // //     }
+
+  // //     console.log('remainingHeight', remainingHeight);
+  // //     console.log('messageHeight', messageHeight);
+  // //     console.log('screenHeight', screenHeight);
+  // //     console.log('diff', diff);
+  // //   }
+  // // }, [shouldScroll, message.role]);
+
+  // useEffect(() => {
+  //   if (
+  //     message.role === 'user' &&
+  //     shouldScroll &&
+  //     messageRef.current &&
+  //     typeof window !== 'undefined' &&
+  //     remainingHeight === null
+  //   ) {
+  //     const boundingBox = messageRef.current.getBoundingClientRect();
+  //     const remainingSpace = window.innerHeight - boundingBox.bottom;
+
+  //     const validHeight = remainingSpace > 0 ? remainingSpace : 0;
+  //     setRemainingHeight(validHeight);
+
+  //     console.log('🧮 boundingBox.bottom:', boundingBox.bottom);
+  //     console.log('📏 window.innerHeight:', window.innerHeight);
+  //     console.log('🧩 remainingSpace:', remainingSpace);
+  //     console.log('✅ remainingHeight (clamped):', validHeight);
+  //   }
+  // }, [shouldScroll, message.role]);
+
+  useEffect(() => {
+    if (message.role === 'assistant') {
+      const previousScrollY = window.scrollY;
+      const previousHeight = document.body.scrollHeight;
+
+      // Esperamos dos frames para asegurarnos de que todo se renderizó (incluyendo imágenes, videos, etc.)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const newHeight = document.body.scrollHeight;
+          const diff = newHeight - previousHeight;
+
+          if (diff > 0) {
+            window.scrollTo({
+              top: previousScrollY + diff,
+              behavior: 'auto',
+            });
+          }
+        });
+      });
+    }
+  }, [message.content]);
 
   useEffect(() => {
     const regex = /\[(\d+)\]/g;
@@ -111,7 +179,22 @@ const MessageBox = ({
   };
 
   return (
-    <div ref={messageRef} className={shouldScroll ? 'h-screen' : 'h-auto'}>
+    <div
+      ref={messageRef}
+      className={shouldScroll ? 'min-h-screen' : 'h-auto'}
+      // className={
+      //   message.role === 'user' && shouldScroll
+      //     ? `min-h-screen ${remainingHeight ? `h-[calc(100vh-${remainingHeight}px)]` : 'h-screen'}`
+      //     : 'h-auto'
+      // }
+      // style={
+      //   message.role === 'user' && shouldScroll
+      //     ? { minHeight: '100vh' }
+      //     : remainingHeight
+      //       ? { height: `${remainingHeight}px` }
+      //       : undefined
+      // }
+    >
       {message.role === 'user' && (
         <div
           className={cn(
