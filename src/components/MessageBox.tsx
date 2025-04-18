@@ -112,27 +112,27 @@ const MessageBox = ({
   //   }
   // }, [shouldScroll, message.role]);
 
-  useEffect(() => {
-    if (message.role === 'assistant') {
-      const previousScrollY = window.scrollY;
-      const previousHeight = document.body.scrollHeight;
+  // useEffect(() => {
+  //   if (message.role === 'assistant') {
+  //     const previousScrollY = window.scrollY;
+  //     const previousHeight = document.body.scrollHeight;
 
-      // Esperamos dos frames para asegurarnos de que todo se renderizó (incluyendo imágenes, videos, etc.)
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const newHeight = document.body.scrollHeight;
-          const diff = newHeight - previousHeight;
+  //     // Esperamos dos frames para asegurarnos de que todo se renderizó (incluyendo imágenes, videos, etc.)
+  //     requestAnimationFrame(() => {
+  //       requestAnimationFrame(() => {
+  //         const newHeight = document.body.scrollHeight;
+  //         const diff = newHeight - previousHeight;
 
-          if (diff > 0) {
-            window.scrollTo({
-              top: previousScrollY + diff,
-              behavior: 'auto',
-            });
-          }
-        });
-      });
-    }
-  }, [message.content]);
+  //         if (diff > 0) {
+  //           window.scrollTo({
+  //             top: previousScrollY + diff,
+  //             behavior: 'auto',
+  //           });
+  //         }
+  //       });
+  //     });
+  //   }
+  // }, [message.content]);
 
   useEffect(() => {
     const regex = /\[(\d+)\]/g;
@@ -181,7 +181,8 @@ const MessageBox = ({
   return (
     <div
       ref={messageRef}
-      className={shouldScroll ? 'min-h-screen' : 'h-auto'}
+      // className={shouldScroll ? 'min-h-screen' : 'h-auto'}
+      className={shouldScroll ? 'min-h-screen' : ''}
       // className={
       //   message.role === 'user' && shouldScroll
       //     ? `min-h-screen ${remainingHeight ? `h-[calc(100vh-${remainingHeight}px)]` : 'h-screen'}`

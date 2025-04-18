@@ -80,7 +80,7 @@ const Chat = ({
                     isLast={isLast}
                     rewrite={rewrite}
                     sendMessage={sendMessage}
-                    shouldScroll={i === messages.length - 1}
+                    shouldScroll={isLast}
                     showSkeleton={loading && !messageAppeared}
                   />
                   {!isLast && msg.role === 'assistant' && (
